@@ -44,13 +44,13 @@ docker-compose up -d
 ├── n8n_data/                   # Persistent n8n data (workflows, credentials, settings)
 ├── input_wsl/                  # Mounted input directory for file processing
 ├── workflows/                  # Exported workflow JSON files
-│   └── My 1st AI Agent.json   # AI email assistant workflow
+│   └── AI Email Assistant.json   # AI email assistant workflow
 └── README.md
 ```
 
 ## Included Workflows
 
-### My 1st AI Agent - Email Assistant
+### AI Email Assistant
 
 A sophisticated AI agent designed to:
 
