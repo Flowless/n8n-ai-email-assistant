@@ -1,0 +1,14 @@
+# n8n runtime data
+n8n_data/
+input_wsl/
+
+# Git backup
+.git_backup/
+
+# Node/npm stuff just in case
+node_modules/
+npm-debug.log*
+
+# OS/editor junk
+.DS_Store
+*.swp

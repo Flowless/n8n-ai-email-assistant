@@ -1,0 +1,338 @@
+{
+  "name": "My 1st AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -160,
+        -16
+      ],
+      "id": "97c8979e-f79e-4df8-acd8-a76e155e8ff2",
+      "name": "When chat message received",
+      "webhookId": "8c9985c3-b95c-4549-bc0c-898e9fe6d9e1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "ROLE\nYou are a personal productivity assistant for a cybersecurity freelancer. Your primary function is to help manage and process emails efficiently, saving time and ensuring important communications are properly handled.\n\nINSTRUCTIONS\nYour core responsibilities include:\n1. Read and analyze incoming emails from the Gmail inbox (your-email@example.com)\n2. Categorize emails by priority and type:\n   - URGENT: Client security incidents, time-sensitive requests, payment issues\n   - HIGH: New project inquiries, ongoing project updates, contract discussions\n   - MEDIUM: Industry updates, networking opportunities, general inquiries\n   - LOW: Newsletters, promotional content, automated notifications\n3. Summarize each email's key points in 2-3 sentences\n4. Identify action items and extract:\n   - Deadlines or time-sensitive items\n   - Required responses or follow-ups\n   - Attached files that need review\n   - Meeting requests or scheduling needs\n5. Flag potential security concerns:\n   - Phishing attempts or suspicious senders\n   - Unusual requests for sensitive information\n   - Links or attachments that seem risky\n6. Provide a daily digest format with:\n   - Total emails received\n   - Breakdown by category\n   - Top 5 emails requiring immediate attention\n   - Suggested response priorities\n\nTOOLS\nYou have access to:\n- Gmail inbox (your-email@example.com) - read access only\n- Email metadata (sender, subject, timestamp, labels)\n- Email body content (text and HTML)\n- Attachment information (names, types, sizes - not contents)\n\nCONTEXT\nThe user is a cybersecurity freelancer who:\n- Works with multiple clients on security assessments, penetration testing, and consulting\n- Receives a mix of client communications, project updates, and business development inquiries\n- Needs to respond quickly to security incidents and urgent client requests\n- Values privacy and confidentiality in all communications\n- Often receives technical emails with security findings, vulnerability reports, and compliance questions\n\nRESTRICTIONS\n1. READ-ONLY ACCESS: Never send, delete, archive, or modify emails without explicit user confirmation\n2. PRIVACY PROTECTION: Never share email contents, client names, or sensitive information outside of the user's secure environment\n3. NO AUTOMATIC RESPONSES: Only draft suggested responses, never send them automatically\n4. CONFIDENTIALITY: Treat all client communications as confidential - do not log, store, or transmit sensitive details\n5. VERIFICATION REQUIRED: For any email flagged as suspicious or requesting sensitive actions, always ask the user to verify before taking action\n6. SCOPE LIMITATION: Only process emails from the specified inbox (your-email@example.com), do not access other accounts\n7. DATA RETENTION: Do not store historical email data beyond the current session unless explicitly requested\n8. PROFESSIONAL BOUNDARIES: Maintain professional tone in all summaries and suggested responses\n9. ERROR HANDLING: If unable to process an email (encoding issues, corrupted content), flag it for manual review rather than skipping\n10. TRANSPARENT OPERATION: Always explain your categorization decisions and reasoning when asked\n\nOUTPUT FORMAT\nPresent information in clear, scannable plain text format:\n- Use simple headers and bullet points\n- No HTML or complex formatting\n- Include timestamps in user's local timezone\n- Keep summaries concise and actionable"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        128,
+        -16
+      ],
+      "id": "d9f2dbdc-62ab-4d60-a106-77dc7dcf4ad5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        208
+      ],
+      "id": "a3d85849-67ea-45eb-8f3e-cfe6d9fc378b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        208
+      ],
+      "id": "7725d896-bc2e-4c7b-ac1f-31837819cd46",
+      "name": "Read Email",
+      "webhookId": "f1ac38ee-5397-4c53-8445-8b3bd89f8a08",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "d9oHWDYxg8qSS3KN",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        208
+      ],
+      "id": "e6d94cac-b89f-4d95-8c15-beebf5bccbae",
+      "name": "Claude",
+      "credentials": {
+        "anthropicApi": {
+          "id": "tY81uqOUwVlRfp1Z",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "aiOutput",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        -16
+      ],
+      "id": "56b1e671-f5e2-4554-9900-87236c5830a6",
+      "name": "Text to Binary"
+    },
+    {
+      "parameters": {
+        "resume": "form",
+        "formTitle": "Approval Form",
+        "formDescription": "=Do you want to continue writing this information to the file?\n\nHere's some of the content:\n {{ $json.output.slice(0,500) }}",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "approval",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "approve"
+                  },
+                  {
+                    "option": "reject"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        -16
+      ],
+      "id": "296f4cba-732a-4d5a-818c-73d6207286bc",
+      "name": "User Approval Form",
+      "webhookId": "b62615bc-bc40-4fa9-ad26-a574bfae3b3e",
+      "notesInFlow": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/data/input_n8n/email_output3.txt",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -16
+      ],
+      "id": "f2ab0f01-c327-4e9d-a921-8aa896241118",
+      "name": "Write to n8n-disk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e7a40ca-2ef3-4632-aa4e-35ae6d678e6b",
+              "name": "aiOutput",
+              "value": "={{ $node[\"AI Agent\"].json[\"output\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        -16
+      ],
+      "id": "4dd98381-f1b7-418c-a2ef-2dc0e86eb538",
+      "name": "Fetch AgentOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "710d7752-daa1-4e92-ae9a-4e2e5f4785de",
+              "leftValue": "={{ $json.approval }}",
+              "rightValue": "approve",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        -16
+      ],
+      "id": "6e5ac58b-7a1a-4776-b3de-17556ba4edfc",
+      "name": "User approved?"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "User Approval Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Binary": {
+      "main": [
+        [
+          {
+            "node": "Write to n8n-disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Approval Form": {
+      "main": [
+        [
+          {
+            "node": "User approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch AgentOutput": {
+      "main": [
+        [
+          {
+            "node": "Text to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User approved?": {
+      "main": [
+        [
+          {
+            "node": "Fetch AgentOutput",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9decd270-0153-42d3-aa0d-9c1828718600",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7b5edd5e3853dd3de39275431be1aaf1530ca96d13940741bad3b4c523fc1e3b"
+  },
+  "id": "wAT8UpnQHBlFw6Qm",
+  "tags": []
+}

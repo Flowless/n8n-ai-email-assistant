@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./input_wsl:/data/input_n8n
+    environment:
+      - TZ=Europe/Stockholm
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    restart: unless-stopped
+        
